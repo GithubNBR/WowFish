@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0-windows</TargetFramework>
+        <Nullable>enable</Nullable>
+        <UseWindowsForms>true</UseWindowsForms>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\AutoScript\AutoScript.csproj" />
+      <ProjectReference Include="..\KernelImport\KernelImport.csproj" />
+      <ProjectReference Include="..\LogDll\LogDll.csproj" />
+      <ProjectReference Include="..\WindowsDll\WindowsDll.csproj" />
+    </ItemGroup>
+
+</Project>
