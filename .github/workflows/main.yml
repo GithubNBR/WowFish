@@ -1,4 +1,4 @@
-name: Build CSharp Full Package
+name: Build Portable WowFishing 2026
 
 on:
   workflow_dispatch:
@@ -11,29 +11,21 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Setup MSBuild
-      uses: microsoft/setup-msbuild@v2
+    - name: Setup .NET 9
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
 
-    - name: Setup NuGet
-      uses: NuGet/setup-nuget@v2
-
-    - name: Restore NuGet Packages
-      run: nuget restore WowFishing.sln
-
-    - name: Build Solution
-      run: msbuild WowFishing.sln /p:Configuration=Release /p:Platform="Any CPU"
-
-    - name: Prepare Package
-      shell: pwsh
+    - name: Publish All-in-One Package
+      # 参数解释：
+      # -r win-x64: 锁定 Windows 64位系统
+      # --self-contained true: 把 .NET 运行库直接塞进去，你不用再安装任何环境
+      # -p:PublishSingleFile=false: 不合并成一个巨大的 exe，避免被杀毒软件当病毒
       run: |
-        # 创建一个专门的存放目录
-        New-Item -ItemType Directory -Path "Final_Release"
-        # 把所有生成的 exe, dll 和配置文件都抓过来
-        Get-ChildItem -Recurse -Path "**/bin/Release/" -Include *.exe, *.dll, *.config, *.xml | Copy-Item -Destination "Final_Release" -Force
-        Write-Host "打包完成，准备上传..."
+        dotnet publish WowFishing.sln -c Release -r win-x64 --self-contained true -o ./Final_Output
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: WowFishing_Full_Package
-        path: Final_Release/
+        name: WowFishing_No_Install_Required
+        path: ./Final_Output/
