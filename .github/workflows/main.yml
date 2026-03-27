@@ -1,4 +1,4 @@
-name: Build EXE 2026
+name: Build EXE Ultimate
 
 on:
   workflow_dispatch:
@@ -9,28 +9,40 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4 # 升级到 v4，解决 Node.js 警告
+      uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v5 # 升级到 v5，解决 Node.js 警告
+      uses: actions/setup-python@v5
       with:
         python-version: '3.9'
 
-    - name: Install dependencies
+    - name: Install Tools
       run: |
-        pip install -r requirements.txt
-        pip install pyinstaller
+        python -m pip install --upgrade pip
+        pip install pyinstaller wheel
 
-    - name: Build EXE with PyInstaller
+    - name: Install Requirements
+      run: |
+        # 如果有 requirements.txt 就安装，没有就跳过
+        if (Test-Path "requirements.txt") { pip install -r requirements.txt }
+
+    - name: Auto-Detect and Build
       shell: pwsh
       run: |
-        # 自动检测当前文件夹下到底哪个才是主程序
-        $mainFile = if (Test-Path "wowfish.py") { "wowfish.py" } else { "main.py" }
-        Write-Host "检测到主程序为: $mainFile"
-        pyinstaller --onefile --name "WowFish_Tool" $mainFile
+        # 寻找最像启动文件的脚本
+        $target = ""
+        if (Test-Path "main.py") { $target = "main.py" }
+        elseif (Test-Path "wowfish.py") { $target = "wowfish.py" }
+        elseif (Test-Path "gui.py") { $target = "gui.py" }
+        else { $target = (Get-ChildItem *.py | Select-Object -First 1).Name }
+
+        if (-not $target) { Write-Error "找不到任何 Python 脚本！"; exit 1 }
+        
+        Write-Host "正在打包文件: $target"
+        pyinstaller --onefile --noconsole --name "WowFish_Tool" $target
 
     - name: Upload Artifact
-      uses: actions/upload-artifact@v4 # 必须使用 v4
+      uses: actions/upload-artifact@v4
       with:
         name: WowFish-Windows-EXE
         path: dist/WowFish_Tool.exe
