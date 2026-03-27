@@ -26,7 +26,7 @@ jobs:
         pyinstaller --onefile --name "WowFish_Tool" main.py
 
     - name: Upload Artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4  # 这里从 v3 改成 v4
       with:
         name: WowFish-Windows-EXE
         path: dist/WowFish_Tool.exe
