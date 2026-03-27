@@ -1,4 +1,4 @@
-name: Build CSharp EXE
+name: Build CSharp Full Package
 
 on:
   workflow_dispatch:
@@ -23,9 +23,17 @@ jobs:
     - name: Build Solution
       run: msbuild WowFishing.sln /p:Configuration=Release /p:Platform="Any CPU"
 
+    - name: Prepare Package
+      shell: pwsh
+      run: |
+        # 创建一个专门的存放目录
+        New-Item -ItemType Directory -Path "Final_Release"
+        # 把所有生成的 exe, dll 和配置文件都抓过来
+        Get-ChildItem -Recurse -Path "**/bin/Release/" -Include *.exe, *.dll, *.config, *.xml | Copy-Item -Destination "Final_Release" -Force
+        Write-Host "打包完成，准备上传..."
+
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: WowFishing-Windows-EXE
-        # 这里会自动抓取生成的 bin 文件夹下所有的 .exe 文件
-        path: "**/bin/Release/**/*.exe"
+        name: WowFishing_Full_Package
+        path: Final_Release/
